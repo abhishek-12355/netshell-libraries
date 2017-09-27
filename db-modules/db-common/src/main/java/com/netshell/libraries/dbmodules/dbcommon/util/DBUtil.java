@@ -2,9 +2,13 @@ package com.netshell.libraries.dbmodules.dbcommon.util;
 
 import com.netshell.libraries.utilities.common.Consumer;
 import com.netshell.libraries.utilities.common.Function;
+import com.netshell.libraries.utilities.common.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,6 +140,12 @@ public final class DBUtil {
                 statement.setBoolean(i + 1, ((Boolean) o));
             } else if (o instanceof java.util.Date) {
                 statement.setDate(i + 1, new Date(((java.util.Date) o).getTime()));
+            } else if (o instanceof byte[]) {
+                final Blob blob = statement.getConnection().createBlob();
+                blob.setBytes(0, (byte[]) o);
+                statement.setBlob(i + 1, blob);
+            } else if (o instanceof InputStream) {
+                statement.setBlob(i + 1, (InputStream) o);
             } else {
                 statement.setString(i + 1, o.toString());
             }
@@ -161,6 +171,17 @@ public final class DBUtil {
                 list.add(statement.getBoolean(index));
             } else if (o.equals(JDBCType.INTEGER)) {
                 list.add(statement.getInt(index));
+            } else if (o.equals(JDBCType.BLOB)) {
+                final Blob blob = statement.getBlob(index);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                try {
+                    IOUtils.inputToOutputStream(blob.getBinaryStream(), out);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    blob.free();
+                }
+                list.add(out.toByteArray());
             } else {
                 list.add(statement.getString(index));
             }
