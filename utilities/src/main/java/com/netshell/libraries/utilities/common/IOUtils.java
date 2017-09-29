@@ -18,12 +18,16 @@ public final class IOUtils {
      * @return bytes representing the serialized object
      * @throws IOException exception is thrown by underlying stream
      */
-    public static <T extends Serializable> byte[] toObjectBytes(final T serializable) throws IOException {
+    public static <T> byte[] toObjectBytes(final T serializable) throws IOException {
+        return toObjectStream(serializable).toByteArray();
+    }
+
+    public static <T> ByteArrayOutputStream toObjectStream(T serializable) throws IOException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (final ObjectOutputStream oos = new ObjectOutputStream(out)) {
             oos.writeObject(serializable);
         }
-        return out.toByteArray();
+        return out;
     }
 
     /**

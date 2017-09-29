@@ -43,6 +43,8 @@ public final class DBUtil {
                 try (final ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet != null) {
                         consumer.accept(resultSet);
+                    } else {
+                        LOGGER.debug("ResultSet is NULL. Skipping Consumer");
                     }
                 }
             }

@@ -20,10 +20,10 @@ final class ConnectionManager {
     }
 
     static void closeConnection(boolean commit) {
-        LOGGER.trace("Invoking closeConnection() with commit {0}", commit);
+        LOGGER.trace("Invoking closeConnection() with commit {}", commit);
         final LocalConnection c = ConnectionManager.localConnection.get();
         if (c == null) {
-            LOGGER.trace("No Connection Initialized.");
+            LOGGER.trace("No Connection Initialized");
             return;
         }
 
@@ -61,7 +61,7 @@ final class ConnectionManager {
             c = new LocalConnection();
             c.connection = getNewConnection();
             c.initialAutoCommit = c.connection.getAutoCommit();
-            LOGGER.trace("Initial AutoCommit {0}", c.initialAutoCommit);
+            LOGGER.trace("Initial AutoCommit {}", c.initialAutoCommit);
             c.connection.setAutoCommit(false);
             localConnection.set(c);
         }

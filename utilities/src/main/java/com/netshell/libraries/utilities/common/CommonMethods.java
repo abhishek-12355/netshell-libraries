@@ -37,6 +37,11 @@ public final class CommonMethods {
         return checkInput(input, "Input Validation Failed");
     }
 
+    public static <T> T checkInputDefault(final T input, final T tDefault) {
+        final boolean res = input == null || !(input instanceof CharSequence && isEmpty((CharSequence) input));
+        return res ? tDefault : input;
+    }
+
     /**
      * @param input
      * @param failMessage
@@ -52,11 +57,11 @@ public final class CommonMethods {
     }
 
     private static <T> boolean validateInput(T input) {
-        return input == null ||
+        return input != null && (
                 !(input instanceof CharSequence && isEmpty((CharSequence) input)) ||
                 !(input instanceof Collection && isEmpty((Collection) input)) ||
                 !(input instanceof Map && isEmpty((Map) input)) ||
-                !(input.getClass().isArray() && isEmpty((Object[]) input));
+                        !(input.getClass().isArray() && isEmpty((Object[]) input)));
     }
 
     private static <T> void throwException(final String failMessage) {
