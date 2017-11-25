@@ -42,12 +42,14 @@ public final class IOUtils {
      * @throws ClassNotFoundException exception is raised if the specified class is not found
      */
     public static <T extends Serializable> T toBytesObject(final byte[] bytes, final Class<T> tClass) throws IOException, ClassNotFoundException {
-        final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        Object o;
-        try (final ObjectInput ois = new ContextObjectInputStream(in)) {
-            o = ois.readObject();
-        }
+        final Object o = toStreamObject(new ByteArrayInputStream(bytes));
         return tClass.cast(o);
+    }
+
+    public static Object toStreamObject(InputStream in) throws IOException, ClassNotFoundException {
+        try (final ObjectInput ois = new ContextObjectInputStream(in)) {
+            return ois.readObject();
+        }
     }
 
     /**

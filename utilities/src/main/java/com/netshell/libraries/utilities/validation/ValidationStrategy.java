@@ -16,7 +16,7 @@ public interface ValidationStrategy<T> extends Strategy {
     static <T> ValidationStrategy<T> identity() {
         return new ValidationStrategy<T>() {
             @Override
-            public T validate(T t) {
+            public T validate(T t) throws ValidationException {
                 return t;
             }
 

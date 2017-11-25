@@ -13,8 +13,10 @@ public abstract class AbstractStrategyFactory<T extends Strategy>
         extends AbstractCustomFactory<T>
         implements StrategyFactory<T> {
 
+    private static final String STRATEGY_MANAGER = "STRATEGY_MANAGER";
+
     protected <O extends Strategy> void registerStrategy(final String name, final O strategy) {
-        CommonUtils.getManager().registerSingleton(name, strategy);
+        CommonUtils.getManager(STRATEGY_MANAGER).registerSingleton(name, strategy);
     }
 
     protected <O extends Strategy> O getStrategy(final Class<O> tClass, final String name) {
@@ -23,7 +25,7 @@ public abstract class AbstractStrategyFactory<T extends Strategy>
 
     @Override
     protected final T createNew(Class<?>[] parameterTypes, Object[] params) {
-        return CommonUtils.getManager().getSingleton((String) params[0], getType()).orElseGet(getDefault());
+        return CommonUtils.getManager(STRATEGY_MANAGER).getSingleton((String) params[0], getType()).orElseGet(getDefault());
     }
 
     protected abstract Class<T> getType();

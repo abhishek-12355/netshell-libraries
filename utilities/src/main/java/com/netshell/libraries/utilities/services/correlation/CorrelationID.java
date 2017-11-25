@@ -26,7 +26,7 @@ public final class CorrelationID implements Serializable {
         final String stringImpl = SequencerProcess
                 .createProcess(v -> correlation.getBytes())
                 .andThan(bytes -> wrapFunction(() -> IOUtils.decompress(bytes)))
-                .andThan(EncoderService::decode)
+                .andThan((Function<byte[], byte[]>) EncoderService::decode)
 //                .andThan(EncryptionService::decrypt)
                 .andThan((Function<byte[], String>) String::new).execute();
 
@@ -67,7 +67,7 @@ public final class CorrelationID implements Serializable {
         return SequencerProcess
                 .createProcess(v -> wrapFunction(() -> toStringImpl().getBytes()))
 //                .andThan(EncryptionService::encrypt)
-                .andThan(EncoderService::encode)
+                .andThan((Function<byte[], byte[]>) EncoderService::encode)
                 .andThan(bytes -> wrapFunction(() -> IOUtils.compress(bytes)))
                 .andThan((Function<byte[], String>) String::new).execute();
     }
