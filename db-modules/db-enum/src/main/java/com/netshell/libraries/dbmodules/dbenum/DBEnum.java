@@ -8,6 +8,7 @@ import com.netshell.libraries.utilities.common.ReflectionUtils;
 import com.netshell.libraries.utilities.filter.Filter;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * @author Abhishek
@@ -43,6 +44,10 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
         this.delegate = new DBEnumInternal<>(initializer, dataSource);
     }
 
+    private DBEnum(final Supplier<Initializer<T, I>> initializerSupplier, final Supplier<DataSource<I>> dataSourceSupplier) {
+        this.delegate = new DBEnumInternal<>(initializerSupplier, dataSourceSupplier);
+    }
+
     /**
      * @param tEnumClass
      * @param initializer
@@ -57,6 +62,14 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
             final Initializer<TEnum, TEntity> initializer,
             final DataSource<TEntity> dataSource) {
         CommonUtils.getManager().registerSingleton(tEnumClass.getName(), new DBEnum<>(initializer, dataSource));
+    }
+
+    public static <TEntity, TEnumId, TEnum extends Initializable<TEnumId>>
+    void initialize(
+            final Class<TEnum> tEnumClass,
+            final Supplier<Initializer<TEnum, TEntity>> initializerSupplier,
+            final Supplier<DataSource<TEntity>> dataSourceSupplier) {
+        CommonUtils.getManager().registerSingleton(tEnumClass.getName(), new DBEnum<>(initializerSupplier, dataSourceSupplier));
     }
 
     public static <TEntity extends DBDefaultEnumEntity<TEnumId>, TEnumId>
@@ -134,6 +147,11 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
         return DBEnum.getDBEnumObject(tEnumClass).getEnumCollection();
     }
 
+    public static <TEnumId, TEnum extends Initializable<TEnumId>>
+    void refresh(final Class<TEnum> tEnumClass) {
+        DBEnum.getDBEnumObject(tEnumClass).refresh();
+    }
+
     @SuppressWarnings("unchecked")
     private static <TEntity, TEnumId, TEnum extends Initializable<TEnumId>>
     DBEnum<TEntity, TEnumId, TEnum> getDBEnumObject(final Class<TEnum> tEnumClass) {
@@ -184,6 +202,10 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
         return delegate.getEnumCollection();
     }
 
+    private void refresh() {
+        this.delegate.refresh();
+    }
+
 
     public interface DBDefaultEnumEntity<TEnumId> {
         String getId();
@@ -216,6 +238,8 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
          * tMap is map containing all the enumeration values as retrived from the datasource
          */
         private final Map<O, T> tMap = new HashMap<>();
+        private final Supplier<DataSource<I>> dataSourceSupplier;
+        private final Supplier<Initializer<T, I>> initializerSupplier;
 
         /**
          * Constructor to create a DBEnum.
@@ -225,7 +249,15 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
          * @param dataSource  used to retrieve values into the enumeration. The actual values that are stored as Enumeration.
          */
         private DBEnumInternal(final Initializer<T, I> initializer, final DataSource<I> dataSource) {
+            this.dataSourceSupplier = null;
+            this.initializerSupplier = null;
             this.initialize(initializer, dataSource);
+        }
+
+        private DBEnumInternal(final Supplier<Initializer<T, I>> initializerSupplier, final Supplier<DataSource<I>> dataSourceSupplier) {
+            this.dataSourceSupplier = dataSourceSupplier;
+            this.initializerSupplier = initializerSupplier;
+            this.initialize(initializerSupplier.get(), dataSourceSupplier.get());
         }
 
         /**
@@ -295,6 +327,18 @@ public final class DBEnum<I, O, T extends Initializable<O>> {
         @Override
         public Collection<T> getEnumCollection() {
             return Collections.unmodifiableCollection(this.tMap.values());
+        }
+
+        @Override
+        public void refresh() {
+
+            if (this.initializerSupplier == null || this.dataSourceSupplier == null) {
+                // TODO: do nothing, just log.
+                return;
+            }
+
+            this.tMap.clear();
+            this.initialize(this.initializerSupplier.get(), this.dataSourceSupplier.get());
         }
     }
 }

@@ -37,4 +37,6 @@ public interface IDBEnum<I, O, T extends Initializable<O>> {
     Optional<T> findFirst(final T filterCriteria);
 
     Collection<T> getEnumCollection();
+
+    void refresh();
 }
