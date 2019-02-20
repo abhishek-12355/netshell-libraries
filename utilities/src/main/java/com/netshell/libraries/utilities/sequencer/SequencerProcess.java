@@ -78,7 +78,7 @@ public final class SequencerProcess<T, R> {
             return null;
         });
         sequencerProcess.before = this;
-        this.terminal = true;
+        sequencerProcess.terminal = true;
         return sequencerProcess;
     }
 }
